@@ -12,6 +12,7 @@ struct AddSubscriptionView: View {
     @State private var name = ""
     @State private var price = ""
     @State private var paymentDate = Date()
+    @State private var category: SubscriptionCategory = .diger
     var onSave: (Subscription) -> Void
     var onDismiss: () -> Void
     
@@ -19,10 +20,14 @@ struct AddSubscriptionView: View {
         NavigationView {
             Form {
                 Section("Abonelik Bilgileri") {
-                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $name)
+                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $name).onChange(of: name) { _ in category = Subscription.kategoriTahmin(isim: name)}
                     TextField("Aylık Ücret (₺)", text: $price)
                         .keyboardType(.decimalPad)
                     DatePicker("Ödeme Tarihi", selection: $paymentDate, displayedComponents: .date)
+                    Picker("Kategori", selection: $category) {
+                        ForEach(SubscriptionCategory.allCases, id: \.self) { cat in Text(cat.rawValue).tag(cat)
+                        }
+                    }
                 }
                 
                 Section {
@@ -30,7 +35,8 @@ struct AddSubscriptionView: View {
                         let newSub = Subscription(
                             name: name,
                             price: Double(price) ?? 0,
-                            paymentDate: paymentDate
+                            paymentDate: paymentDate,
+                            category: category
                         )
                         onSave(newSub)
                         onDismiss()

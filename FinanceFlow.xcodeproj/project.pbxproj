@@ -34,9 +34,22 @@
 		D938C6102F586C80009D18FB /* FinanceFlowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FinanceFlowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D96209FB2F5DBC6000683544 /* Exceptions for "FinanceFlow" folder in "FinanceFlow" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Untitled.swift,
+			);
+			target = D938C5F82F586C7E009D18FB /* FinanceFlow */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D938C5FB2F586C7E009D18FB /* FinanceFlow */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D96209FB2F5DBC6000683544 /* Exceptions for "FinanceFlow" folder in "FinanceFlow" target */,
+			);
 			path = FinanceFlow;
 			sourceTree = "<group>";
 		};

@@ -11,6 +11,8 @@ import FirebaseAuth
 
 struct HomeView: View {
     @State private var showAddSubscription = false
+    @State private var showBurnRate = false
+    @State private var showProfile = false
     @State private var subscriptions: [Subscription] = []
     private let db = Firestore.firestore()
     
@@ -26,6 +28,8 @@ struct HomeView: View {
                 
                 VStack(spacing: 0) {
                     VStack(spacing: 8) {
+                        Spacer()
+                            .frame(height: 40)
                         Text("Toplam Aylık Harcama")
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.8))
@@ -37,9 +41,13 @@ struct HomeView: View {
                         Text("\(subscriptions.count) aktif abonelik")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
+                        
+                        Spacer()
+                            .frame(height: 20)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 32)
+                    
                     .background(
                         LinearGradient(
                             colors: [Color.blue, Color.purple],
@@ -61,7 +69,19 @@ struct HomeView: View {
                                     .foregroundColor(.white)
                                     .padding()
                             }
-                        }
+                            Button(action: { showBurnRate = true }) {
+                                Image(systemName: "brain.head.profile")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding()
+                            }
+                            Button(action: { showProfile = true }) {
+                                Image(systemName: "person.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding()
+                            }
+                         }
                     }
                     
                     List {
@@ -83,7 +103,7 @@ struct HomeView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(sub.name)
                                             .font(.headline)
-                                        Text("Her ay ödenir")
+                                        Text(sub.category.rawValue)
                                             .font(.caption)
                                             .foregroundColor(.gray)
                                     }
@@ -105,6 +125,13 @@ struct HomeView: View {
                     .listStyle(.insetGrouped)
                 }
             }
+            .sheet(isPresented: $showBurnRate){
+                BurnRateView(subs: subscriptions)
+            }
+            .sheet(isPresented: $showProfile) {
+                ProfileView(subscriptions: subscriptions)
+            }
+            
             .navigationBarHidden(true)
             .onAppear { fetchSubscriptions() }
             .sheet(isPresented: $showAddSubscription) {
@@ -131,7 +158,8 @@ struct HomeView: View {
                     return Subscription(id: UUID(uuidString: doc.documentID) ?? UUID(),
                                         name: name,
                                         price: price,
-                                        paymentDate: timestamp.dateValue())
+                                        paymentDate: timestamp.dateValue(),
+                                        category: SubscriptionCategory(rawValue: data["category"] as? String ?? "") ?? .diger)
                 }
             }
     }
@@ -143,8 +171,25 @@ struct HomeView: View {
             .setData([
                 "name": sub.name,
                 "price": sub.price,
-                "paymentDate": Timestamp(date: sub.paymentDate)
+                "paymentDate": Timestamp(date: sub.paymentDate),
+                "category": sub.category.rawValue
             ])
+        bildirimKur(sub)
+    }
+
+    func bildirimKur(_ sub: Subscription) {
+        let content = UNMutableNotificationContent()
+        content.title = "Ödeme Zamanı! 💳"
+        content.body = "\(sub.name) aboneliğin bugün yenileniyor: ₺\(String(format: "%.2f", sub.price))"
+        content.sound = .default
+        
+        var dateComponents = Calendar.current.dateComponents([.month, .day], from: sub.paymentDate)
+        dateComponents.hour = 9
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: sub.id.uuidString, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request)
     }
     
     func updateSubscription(_ sub: Subscription) {
