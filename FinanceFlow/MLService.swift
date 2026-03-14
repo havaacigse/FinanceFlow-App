@@ -18,11 +18,12 @@ struct MLService {
         return max(0, output.kalan_bakiye)
     }
     
-    func finansalSaglikSkoru(gelir: Double, abonelik: Double, gecenAyHarcama: Double) -> (skor: Int, durum: String, renk: String) {
+      func finansalSaglikSkoru(gelir: Double, abonelik: Double, gecenAyHarcama: Double) -> (skor: Int, durum: String, renk: String) {
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        if harcamaOrani < 0.5 { return (100, "Sağlıklı", "green") }
-        else if harcamaOrani < 0.7 { return (60, "Dikkatli", "yellow") }
-        else { return (20, "Tehlikeli", "red") }
+        let skor = max(0, min(100, Int((1 - harcamaOrani) * 100)))
+        if skor >= 70 { return (skor, "Sağlıklı", "green") }
+        else if skor >= 40 { return (skor, "Dikkatli", "yellow") }
+        else { return (skor, "Tehlikeli", "red") }
     }
     
     func kacGundeBiter(abonelik: Double, gecenAyHarcama: Double, mevcutBakiye: Double) -> (gun: Int, tarih: String) {

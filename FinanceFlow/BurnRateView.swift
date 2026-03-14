@@ -11,6 +11,7 @@ import Charts
 struct BurnRateView: View {
     @State private var gelir = ""
     @State private var gecenAyHarcama = ""
+    @State private var mevcutBakiye = ""
     @State private var analizYapildi = false
     @Environment(\.dismiss) var dismiss
     
@@ -43,6 +44,7 @@ struct BurnRateView: View {
     }
     
     var skorRenk: Color {
+        guard analizYapildi else { return .gray }
         switch saglik.skor {
         case 80...100: return .green
         case 40...79: return .yellow
@@ -54,12 +56,11 @@ struct BurnRateView: View {
         ScrollView {
             VStack(spacing: 24) {
                 HStack {
-                    Button(action: {dismiss() }) {
+                    Button(action: { dismiss() }) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
                             .font(.title2)
                             .foregroundColor(.gray)
                     }
-                        .foregroundColor(.blue)
                     Spacer()
                     Text("Finansal Analiz")
                         .font(.largeTitle).bold()
@@ -83,6 +84,7 @@ struct BurnRateView: View {
                 .padding(.horizontal)
                 
                 Button("Analiz Et") {
+                    guard !gelir.isEmpty, !gecenAyHarcama.isEmpty else { return }
                     withAnimation { analizYapildi = true }
                 }
                 .font(.headline)
@@ -92,7 +94,6 @@ struct BurnRateView: View {
                 .background(Color.blue)
                 .cornerRadius(12)
                 .padding(.horizontal)
-                
                 
                 if analizYapildi {
                     VStack(spacing: 8) {
@@ -111,7 +112,6 @@ struct BurnRateView: View {
                     .cornerRadius(16)
                     .padding(.horizontal)
                     
-                    //Tahmini
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Tahmini Kalan")
@@ -123,7 +123,7 @@ struct BurnRateView: View {
                         VStack(alignment: .trailing) {
                             Text("İflas Riski")
                                 .font(.caption).foregroundColor(.gray)
-                            Text(risk.riskli ? "Riskli " : "Güvenli ")
+                            Text(risk.riskli ? "Riskli 🔴" : "Güvenli 💚")
                                 .font(.title3).bold()
                         }
                     }
@@ -132,7 +132,6 @@ struct BurnRateView: View {
                     .cornerRadius(16)
                     .padding(.horizontal)
                     
-                    // Grafik
                     VStack(alignment: .leading, spacing: 8) {
                         Text("6 Aylık Tahmin")
                             .font(.headline)
