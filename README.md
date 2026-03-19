@@ -24,10 +24,13 @@ The prediction model was trained using Linear Regression in Python, converted to
 SwiftUI · Firebase Auth · Firestore · CoreML · scikit-learn · Apple Charts
 
 ## Screenshots
+## 📱 Screenshots
 
-<!-- add screenshots here -->
-![Ana Ekran](screenshots/home.png)
-![Analiz](screenshots/analysis.png)
+<p align="center">
+  <img src="images/ss1.png" width="250"/>
+  <br><br>
+  <img src="images/ss2.png" width="250"/>
+</p>
 
 ## Getting Started
 
