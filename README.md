@@ -1,7 +1,6 @@
 # FinanceFlow 💳
 
-Personal finance and subscription manager with on-device machine learning.
-
+Personal finance and subscription manager with on-device machine learning.  
 Built with SwiftUI, Firebase, and CoreML — trained in Python with scikit-learn.
 
 ---
@@ -23,7 +22,22 @@ The prediction model was trained using Linear Regression in Python, converted to
 
 SwiftUI · Firebase Auth · Firestore · CoreML · scikit-learn · Apple Charts
 
-## Screenshots
+## Requirements
+
+- Xcode 15+
+- iOS 17+
+- A Firebase project with Firestore enabled
+
+## Getting Started
+
+1. Clone the repo
+```bash
+   git clone https://github.com/havaacigse/FinanceFlow-App.git
+```
+2. Add your `GoogleService-Info.plist` to the `FinanceFlow/` folder
+3. Open `FinanceFlow.xcodeproj` in Xcode
+4. Select a simulator or device and press Run
+
 ## 📱 Screenshots
 
 <p align="center">
@@ -34,8 +48,5 @@ SwiftUI · Firebase Auth · Firestore · CoreML · scikit-learn · Apple Charts
   <img src="images/ss4.png" width="250"/>
 </p>
 
-## Getting Started
-
-Clone the repo, add your `GoogleService-Info.plist`, and run in Xcode.
 
 
