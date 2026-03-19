@@ -29,7 +29,9 @@ SwiftUI · Firebase Auth · Firestore · CoreML · scikit-learn · Apple Charts
 <p align="center">
   <img src="images/ss1.png" width="250"/>
   <br><br>
-  <img src="images/ss2.png" width="250"/>
+  <img src="images/ss3.png" width="250"/>
+  <br><br>
+  <img src="images/ss4.png" width="250"/>
 </p>
 
 ## Getting Started
