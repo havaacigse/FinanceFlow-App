@@ -49,4 +49,3 @@ SwiftUI · Firebase Auth · Firestore · CoreML · scikit-learn · Apple Charts
 </p>
 
 
-
