@@ -9,41 +9,52 @@
 import SwiftUI
 
 struct AddSubscriptionView: View {
-    @State private var name = ""
-    @State private var price = ""
-    @State private var paymentDate = Date()
-    @State private var category: SubscriptionCategory = .diger
+    @State private var viewModel = AddSubscriptionViewModel()
     var onSave: (Subscription) -> Void
     var onDismiss: () -> Void
-    private let predictCategory = PredictSubscriptionCategoryUseCase()
 
     var body: some View {
         NavigationView {
             Form {
                 Section("Abonelik Bilgileri") {
-                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $name).onChange(of: name) { _ in category = predictCategory.execute(name: name)}
-                    TextField("Aylık Ücret (₺)", text: $price)
+                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $viewModel.name)
+                        .onChange(of: viewModel.name) { _, _ in
+                            viewModel.predictCategoryFromName()
+                        }
+                    if let message = viewModel.nameErrorMessage {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+
+                    TextField("Aylık Ücret (₺)", text: $viewModel.priceText)
                         .keyboardType(.decimalPad)
-                    DatePicker("Ödeme Tarihi", selection: $paymentDate, displayedComponents: .date)
-                    Picker("Kategori", selection: $category) {
+                    if let message = viewModel.priceErrorMessage {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+
+                    DatePicker("Ödeme Tarihi", selection: $viewModel.paymentDate, displayedComponents: .date)
+                    Picker("Kategori", selection: Binding(
+                        get: { viewModel.category },
+                        set: { viewModel.setCategory($0) }
+                    )) {
                         ForEach(SubscriptionCategory.allCases, id: \.self) { cat in Text(cat.rawValue).tag(cat)
                         }
                     }
                 }
-                
+
                 Section {
                     Button("Kaydet") {
-                        let newSub = Subscription(
-                            name: name,
-                            price: Double(price) ?? 0,
-                            paymentDate: paymentDate,
-                            category: category
-                        )
-                        onSave(newSub)
-                        onDismiss()
+                        if let subscription = viewModel.makeSubscription() {
+                            onSave(subscription)
+                            onDismiss()
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .foregroundColor(.blue)
+                    .disabled(!viewModel.isValid)
                 }
             }
             .navigationTitle("Abonelik Ekle")
