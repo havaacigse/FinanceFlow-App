@@ -15,12 +15,13 @@ struct AddSubscriptionView: View {
     @State private var category: SubscriptionCategory = .diger
     var onSave: (Subscription) -> Void
     var onDismiss: () -> Void
-    
+    private let predictCategory = PredictSubscriptionCategoryUseCase()
+
     var body: some View {
         NavigationView {
             Form {
                 Section("Abonelik Bilgileri") {
-                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $name).onChange(of: name) { _ in category = Subscription.kategoriTahmin(isim: name)}
+                    TextField("Abonelik Adı (Netflix, Spotify...)", text: $name).onChange(of: name) { _ in category = predictCategory.execute(name: name)}
                     TextField("Aylık Ücret (₺)", text: $price)
                         .keyboardType(.decimalPad)
                     DatePicker("Ödeme Tarihi", selection: $paymentDate, displayedComponents: .date)
