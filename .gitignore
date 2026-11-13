@@ -1,2 +1,5 @@
 FinanceFlow/GoogleService-Info.plist
 .DS_Store
+xcuserdata/
+*.xcuserstate
+DerivedData/

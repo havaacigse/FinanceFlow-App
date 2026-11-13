@@ -16,7 +16,7 @@ struct ContentView: View {
     
     var body: some View {
         if isLoggedIn {
-            HomeView()
+            HomeView(onLogout: { try? Auth.auth().signOut() })
         } else {
             ZStack {
                 LinearGradient(
