@@ -136,10 +136,8 @@ struct HomeView: View {
             List {
                 ForEach(viewModel.subscriptions) { sub in
                     NavigationLink(destination: SubscriptionDetailView(
-                        subscription: sub,
-                        onSave: { updated in
-                            Task { await viewModel.save(updated) }
-                        }
+                        id: sub.id,
+                        viewModel: viewModel
                     )) {
                         HStack {
                             ZStack {
