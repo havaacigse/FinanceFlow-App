@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct AddSubscriptionView: View {
-    @State private var viewModel = AddSubscriptionViewModel()
+    @State private var viewModel = SubscriptionFormViewModel(mode: .new)
     var onSave: (Subscription) -> Void
     var onDismiss: () -> Void
 
