@@ -80,11 +80,26 @@ struct HomeViewModelTests {
     func deleteFailureSetsActionErrorMessage() async {
         let repository = MockSubscriptionRepository()
         repository.deleteError = SampleError()
-        let viewModel = HomeViewModel(repository: repository, notificationScheduler: MockNotificationScheduler())
+        let scheduler = MockNotificationScheduler()
+        let viewModel = HomeViewModel(repository: repository, notificationScheduler: scheduler)
         let sample = Subscription(name: "Netflix", price: 149.99, paymentDate: Date())
 
         await viewModel.delete(sample)
 
         #expect(viewModel.actionErrorMessage != nil)
+        #expect(scheduler.canceledIDs.isEmpty)
+    }
+
+    @Test
+    func deleteSuccessCancelsNotification() async {
+        let repository = MockSubscriptionRepository()
+        let scheduler = MockNotificationScheduler()
+        let viewModel = HomeViewModel(repository: repository, notificationScheduler: scheduler)
+        let sample = Subscription(name: "Netflix", price: 149.99, paymentDate: Date())
+
+        await viewModel.delete(sample)
+
+        #expect(repository.deletedIDs == [sample.id])
+        #expect(scheduler.canceledIDs == [sample.id])
     }
 }
