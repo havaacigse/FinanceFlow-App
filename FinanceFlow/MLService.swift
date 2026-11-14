@@ -9,36 +9,47 @@ import Foundation
 import CoreML
 
 struct MLService {
-    
+
     private let model: BurnRateModel? = try? BurnRateModel(configuration: MLModelConfiguration())
-    
-    func kalanBakiyeTahmini(gelir: Double, abonelik: Double, gecenAyHarcama: Double) -> Double {
-        let input = BurnRateModelInput(gelir: gelir, abonelik: abonelik, gecen_ay_harcama: gecenAyHarcama)
+
+    func kalanBakiyeTahmini(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> Decimal {
+        let input = BurnRateModelInput(
+            gelir: Self.asDouble(gelir),
+            abonelik: Self.asDouble(abonelik),
+            gecen_ay_harcama: Self.asDouble(gecenAyHarcama)
+        )
         guard let output = try? model?.prediction(input: input) else { return 0 }
-        return max(0, output.kalan_bakiye)
+        return max(0, Decimal(output.kalan_bakiye))
     }
-    
-      func finansalSaglikSkoru(gelir: Double, abonelik: Double, gecenAyHarcama: Double) -> (skor: Int, durum: String, renk: String) {
+
+      func finansalSaglikSkoru(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (skor: Int, durum: String, renk: String) {
+        guard gelir > 0 else { return (0, "Hesaplanamadı", "gray") }
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        let skor = max(0, min(100, Int((1 - harcamaOrani) * 100)))
+        let skor = max(0, min(100, ((1 - harcamaOrani) * 100).roundedToInt()))
         if skor >= 70 { return (skor, "Sağlıklı", "green") }
         else if skor >= 40 { return (skor, "Dikkatli", "yellow") }
         else { return (skor, "Tehlikeli", "red") }
     }
-    
-    func kacGundeBiter(abonelik: Double, gecenAyHarcama: Double, mevcutBakiye: Double) -> (gun: Int, tarih: String) {
+
+    func kacGundeBiter(abonelik: Decimal, gecenAyHarcama: Decimal, mevcutBakiye: Decimal) -> (gun: Int, tarih: String) {
         let gunlukHarcama = (abonelik + gecenAyHarcama) / 30
         guard gunlukHarcama > 0 else { return (0, "Hesaplanamadı") }
-        let kalanGun = Int(mevcutBakiye / gunlukHarcama)
+        let kalanGun = (mevcutBakiye / gunlukHarcama).roundedToInt()
         let tarih = Calendar.current.date(byAdding: .day, value: kalanGun, to: Date()) ?? Date()
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
         formatter.locale = Locale(identifier: "tr_TR")
         return (kalanGun, formatter.string(from: tarih))
     }
-    
-    func iflasRiski(gelir: Double, abonelik: Double, gecenAyHarcama: Double) -> (riskli: Bool, oran: Double) {
+
+    func iflasRiski(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (riskli: Bool, oran: Decimal) {
+        let skor = finansalSaglikSkoru(gelir: gelir, abonelik: abonelik, gecenAyHarcama: gecenAyHarcama).skor
+        guard gelir > 0 else { return (skor < 40, 0) }
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        return (harcamaOrani > 0.7, min(harcamaOrani * 100, 100))
+        return (skor < 40, min(max(harcamaOrani * 100, 0), 100))
+    }
+
+    private static func asDouble(_ value: Decimal) -> Double {
+        NSDecimalNumber(decimal: value).doubleValue
     }
 }

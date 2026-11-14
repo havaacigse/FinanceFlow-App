@@ -11,7 +11,7 @@ final class HomeViewModel {
     var listErrorMessage: String?
     var actionErrorMessage: String?
 
-    var totalMonthly: Double {
+    var totalMonthly: Decimal {
         subscriptions.reduce(0) { $0 + $1.price }
     }
 
@@ -59,7 +59,7 @@ final class HomeViewModel {
     private func scheduleNotification(for subscription: Subscription) {
         let content = UNMutableNotificationContent()
         content.title = "Ödeme Zamanı! 💳"
-        content.body = "\(subscription.name) aboneliğin bugün yenileniyor: ₺\(String(format: "%.2f", subscription.price))"
+        content.body = "\(subscription.name) aboneliğin bugün yenileniyor: \(subscription.price.formattedAsCurrency())"
         content.sound = .default
 
         var dateComponents = Calendar.current.dateComponents([.month, .day], from: subscription.paymentDate)

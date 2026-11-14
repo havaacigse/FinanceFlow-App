@@ -18,33 +18,53 @@ struct BurnRateView: View {
     let ml = MLService()
     let subs: [Subscription]
     
-    var toplamAbonelik: Double {
+    var toplamAbonelik: Decimal {
         subs.reduce(0) { $0 + $1.price }
     }
-    
-    var g: Double { Double(gelir) ?? 0 }
-    var h: Double { Double(gecenAyHarcama) ?? 0 }
-    
-    var kalan: Double { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+
+    var g: Decimal { Decimal(userInput: gelir) ?? 0 }
+    var h: Decimal { Decimal(userInput: gecenAyHarcama) ?? 0 }
+
+    var isInputValid: Bool {
+        Decimal(userInput: gelir) != nil && Decimal(userInput: gecenAyHarcama) != nil
+    }
+
+    private func amountErrorMessage(for text: String) -> String? {
+        guard !text.isEmpty else { return nil }
+        guard Decimal(userInput: text) != nil else {
+            let separator = Locale.current.decimalSeparator ?? ","
+            return "Geçerli bir tutar girin (örn. 15000\(separator)50)"
+        }
+        return nil
+    }
+
+    var gelirErrorMessage: String? { amountErrorMessage(for: gelir) }
+    var harcamaErrorMessage: String? { amountErrorMessage(for: gecenAyHarcama) }
+
+    var kalan: Decimal { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
     var saglik: (skor: Int, durum: String, renk: String) { ml.finansalSaglikSkoru(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
-    var risk: (riskli: Bool, oran: Double) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
-    
+    var risk: (riskli: Bool, oran: Decimal) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+
     var grafikVerisi: [(ay: String, deger: Double)] {
         let aylar = ["Oca", "Şub", "Mar", "Nis", "May", "Haz"]
+        let toplamAbonelikDouble = NSDecimalNumber(decimal: toplamAbonelik).doubleValue
+        let hDouble = NSDecimalNumber(decimal: h).doubleValue
+        let kalanDouble = NSDecimalNumber(decimal: kalan).doubleValue
         return aylar.enumerated().map { i, ay in
-            let tahmini = kalan - (Double(i) * (toplamAbonelik + h * 0.15))
+            let tahmini = kalanDouble - (Double(i) * (toplamAbonelikDouble + hDouble * 0.15))
             return (ay, max(0, tahmini))
         }
     }
-    
+
     var kategoriHarcama: [(kategori: String, deger: Double)] {
         Dictionary(grouping: subs, by: { $0.category.rawValue })
-            .map { (kategori: $0.key, deger: $0.value.reduce(0) { $0 + $1.price }) }
+            .map { (kategori: $0.key, deger: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.price }).doubleValue) }
             .sorted(by: { $0.deger > $1.deger })
     }
     
     var skorRenk: Color {
         guard analizYapildi else { return .gray }
+        guard saglik.durum != "Hesaplanamadı" else { return .gray }
         switch saglik.skor {
         case 80...100: return .green
         case 40...79: return .yellow
@@ -69,22 +89,38 @@ struct BurnRateView: View {
                 .padding(.horizontal)
                 
                 VStack(spacing: 12) {
-                    TextField("Aylık Geliriniz (₺)", text: $gelir)
-                        .keyboardType(.decimalPad)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                    
-                    TextField("Geçen Ay Harcama (₺)", text: $gecenAyHarcama)
-                        .keyboardType(.decimalPad)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
+                    VStack(alignment: .leading, spacing: 4) {
+                        TextField("Aylık Geliriniz (₺)", text: $gelir)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                        if let message = gelirErrorMessage {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Abonelikler hariç")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        TextField("Geçen Ay Harcama (₺)", text: $gecenAyHarcama)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                        if let message = harcamaErrorMessage {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
                 .padding(.horizontal)
-                
+
                 Button("Analiz Et") {
-                    guard !gelir.isEmpty, !gecenAyHarcama.isEmpty else { return }
                     withAnimation { analizYapildi = true }
                 }
                 .font(.headline)
@@ -94,6 +130,7 @@ struct BurnRateView: View {
                 .background(Color.blue)
                 .cornerRadius(12)
                 .padding(.horizontal)
+                .disabled(!isInputValid)
                 
                 if analizYapildi {
                     VStack(spacing: 8) {
@@ -116,7 +153,7 @@ struct BurnRateView: View {
                         VStack(alignment: .leading) {
                             Text("Tahmini Kalan")
                                 .font(.caption).foregroundColor(.gray)
-                            Text("₺\(String(format: "%.0f", kalan))")
+                            Text(kalan.formattedAsCurrency())
                                 .font(.title2).bold()
                         }
                         Spacer()

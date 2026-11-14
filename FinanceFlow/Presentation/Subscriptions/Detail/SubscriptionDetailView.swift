@@ -25,7 +25,7 @@ struct SubscriptionDetailView: View {
                         .font(.largeTitle)
                         .bold()
 
-                    Text(String(format: "₺%.2f", subscription.price))
+                    Text(subscription.price.formattedAsCurrency())
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.blue)
 

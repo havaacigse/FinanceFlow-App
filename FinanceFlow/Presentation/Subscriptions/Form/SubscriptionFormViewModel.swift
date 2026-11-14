@@ -55,28 +55,8 @@ final class SubscriptionFormViewModel {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && (parsedPrice ?? 0) > 0
     }
 
-    private var parsedPrice: Double? {
-        Self.parsePrice(priceText)
-    }
-
-    private static func parsePrice(_ text: String) -> Double? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-
-        let separatorCount = trimmed.filter { $0 == "," || $0 == "." }.count
-        guard separatorCount <= 1 else { return nil }
-
-        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
-        let components = normalized.split(separator: ".", omittingEmptySubsequences: false)
-        guard components.count <= 2,
-              components.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else {
-            return nil
-        }
-        if components.count == 2 {
-            guard components[1].count <= 2 else { return nil }
-        }
-
-        return Double(normalized)
+    private var parsedPrice: Decimal? {
+        Decimal(userInput: priceText)
     }
 
     private static let displayFormatter: NumberFormatter = {
@@ -88,8 +68,8 @@ final class SubscriptionFormViewModel {
         return formatter
     }()
 
-    private static func format(_ price: Double) -> String {
-        displayFormatter.string(from: NSNumber(value: price)) ?? String(price)
+    private static func format(_ price: Decimal) -> String {
+        displayFormatter.string(from: NSDecimalNumber(decimal: price)) ?? "\(price)"
     }
 
     func predictCategoryFromName() {

@@ -17,15 +17,15 @@ struct ProfileView: View {
         return email.components(separatedBy: "@").first ?? "Kullanıcı"
     }
     
-    var toplamYillik: Double {
+    var toplamYillik: Decimal {
         subscriptions.reduce(0) { $0 + $1.price } * 12
     }
-    
+
     var enPahalı: Subscription? {
         subscriptions.max(by: { $0.price < $1.price })
     }
-    
-    var kategoriler: [String: Double] {
+
+    var kategoriler: [String: Decimal] {
         Dictionary(grouping: subscriptions, by: { $0.category.rawValue })
             .mapValues { $0.reduce(0) { $0 + $1.price } }
     }
@@ -62,7 +62,7 @@ struct ProfileView: View {
                     VStack(spacing: 4) {
                         Text("Aylık")
                             .font(.caption).foregroundColor(.gray)
-                        Text(String(format: "₺%.0f", subscriptions.reduce(0) { $0 + $1.price }))
+                        Text(subscriptions.reduce(0) { $0 + $1.price }.formattedAsCurrency())
                             .font(.title3).bold().foregroundColor(.blue)
                     }
                     .frame(maxWidth: .infinity)
@@ -73,7 +73,7 @@ struct ProfileView: View {
                     VStack(spacing: 4) {
                         Text("Yıllık")
                             .font(.caption).foregroundColor(.gray)
-                        Text(String(format: "₺%.0f", toplamYillik))
+                        Text(toplamYillik.formattedAsCurrency())
                             .font(.title3).bold().foregroundColor(.purple)
                     }
                     .frame(maxWidth: .infinity)
@@ -91,7 +91,7 @@ struct ProfileView: View {
                         HStack {
                             Text(pahalı.name)
                             Spacer()
-                            Text(String(format: "₺%.2f", pahalı.price))
+                            Text(pahalı.price.formattedAsCurrency())
                                 .foregroundColor(.red)
                         }
                     }
@@ -111,7 +111,7 @@ struct ProfileView: View {
                         HStack {
                             Text(kategori)
                             Spacer()
-                            Text(String(format: "₺%.2f", tutar))
+                            Text(tutar.formattedAsCurrency())
                                 .foregroundColor(.blue)
                         }
                         .padding(.horizontal)

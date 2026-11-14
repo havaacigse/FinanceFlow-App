@@ -19,7 +19,7 @@ enum SubscriptionCategory: String, CaseIterable {
 struct Subscription: Identifiable {
     var id = UUID()
     var name: String
-    var price: Double
+    var price: Decimal
     var paymentDate: Date
     var category: SubscriptionCategory = .diger
 }
