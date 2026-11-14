@@ -25,7 +25,7 @@ struct SubscriptionDetailView: View {
                         .font(.largeTitle)
                         .bold()
 
-                    Text(String(format: "₺%.2f", subscription.price))
+                    Text(String(format: "₺%.2f", NSDecimalNumber(decimal: subscription.price).doubleValue))
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.blue)
 

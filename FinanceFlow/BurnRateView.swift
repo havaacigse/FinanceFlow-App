@@ -18,28 +18,31 @@ struct BurnRateView: View {
     let ml = MLService()
     let subs: [Subscription]
     
-    var toplamAbonelik: Double {
+    var toplamAbonelik: Decimal {
         subs.reduce(0) { $0 + $1.price }
     }
-    
-    var g: Double { Double(gelir) ?? 0 }
-    var h: Double { Double(gecenAyHarcama) ?? 0 }
-    
-    var kalan: Double { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+
+    var g: Decimal { Decimal(Double(gelir) ?? 0) }
+    var h: Decimal { Decimal(Double(gecenAyHarcama) ?? 0) }
+
+    var kalan: Decimal { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
     var saglik: (skor: Int, durum: String, renk: String) { ml.finansalSaglikSkoru(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
-    var risk: (riskli: Bool, oran: Double) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
-    
+    var risk: (riskli: Bool, oran: Decimal) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+
     var grafikVerisi: [(ay: String, deger: Double)] {
         let aylar = ["Oca", "Şub", "Mar", "Nis", "May", "Haz"]
+        let toplamAbonelikDouble = NSDecimalNumber(decimal: toplamAbonelik).doubleValue
+        let hDouble = NSDecimalNumber(decimal: h).doubleValue
+        let kalanDouble = NSDecimalNumber(decimal: kalan).doubleValue
         return aylar.enumerated().map { i, ay in
-            let tahmini = kalan - (Double(i) * (toplamAbonelik + h * 0.15))
+            let tahmini = kalanDouble - (Double(i) * (toplamAbonelikDouble + hDouble * 0.15))
             return (ay, max(0, tahmini))
         }
     }
-    
+
     var kategoriHarcama: [(kategori: String, deger: Double)] {
         Dictionary(grouping: subs, by: { $0.category.rawValue })
-            .map { (kategori: $0.key, deger: $0.value.reduce(0) { $0 + $1.price }) }
+            .map { (kategori: $0.key, deger: NSDecimalNumber(decimal: $0.value.reduce(0) { $0 + $1.price }).doubleValue) }
             .sorted(by: { $0.deger > $1.deger })
     }
     
@@ -116,7 +119,7 @@ struct BurnRateView: View {
                         VStack(alignment: .leading) {
                             Text("Tahmini Kalan")
                                 .font(.caption).foregroundColor(.gray)
-                            Text("₺\(String(format: "%.0f", kalan))")
+                            Text("₺\(String(format: "%.0f", NSDecimalNumber(decimal: kalan).doubleValue))")
                                 .font(.title2).bold()
                         }
                         Spacer()
