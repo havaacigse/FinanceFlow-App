@@ -55,6 +55,7 @@ final class HomeViewModel {
     func delete(_ subscription: Subscription) async {
         do {
             try await repository.delete(id: subscription.id)
+            notificationScheduler.cancelNotification(for: subscription.id)
         } catch {
             actionErrorMessage = error.localizedDescription
         }

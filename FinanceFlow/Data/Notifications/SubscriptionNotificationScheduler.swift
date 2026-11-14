@@ -16,4 +16,8 @@ struct SubscriptionNotificationScheduler: SubscriptionNotificationScheduling {
 
         UNUserNotificationCenter.current().add(request)
     }
+
+    func cancelNotification(for subscriptionID: UUID) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [subscriptionID.uuidString])
+    }
 }
