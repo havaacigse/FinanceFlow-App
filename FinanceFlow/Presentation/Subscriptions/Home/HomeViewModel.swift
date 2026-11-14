@@ -1,6 +1,5 @@
 import Foundation
 import Observation
-import UserNotifications
 
 @MainActor
 @Observable
@@ -16,9 +15,14 @@ final class HomeViewModel {
     }
 
     private let repository: SubscriptionRepositoryProtocol
+    private let notificationScheduler: SubscriptionNotificationScheduling
 
-    init(repository: SubscriptionRepositoryProtocol = FirebaseSubscriptionRepository()) {
+    init(
+        repository: SubscriptionRepositoryProtocol = FirebaseSubscriptionRepository(),
+        notificationScheduler: SubscriptionNotificationScheduling = SubscriptionNotificationScheduler()
+    ) {
         self.repository = repository
+        self.notificationScheduler = notificationScheduler
     }
 
     func retry() {
@@ -42,7 +46,7 @@ final class HomeViewModel {
     func save(_ subscription: Subscription) async {
         do {
             try await repository.save(subscription)
-            scheduleNotification(for: subscription)
+            notificationScheduler.scheduleNotification(for: subscription)
         } catch {
             actionErrorMessage = error.localizedDescription
         }
@@ -54,20 +58,5 @@ final class HomeViewModel {
         } catch {
             actionErrorMessage = error.localizedDescription
         }
-    }
-
-    private func scheduleNotification(for subscription: Subscription) {
-        let content = UNMutableNotificationContent()
-        content.title = "Ödeme Zamanı! 💳"
-        content.body = "\(subscription.name) aboneliğin bugün yenileniyor: \(subscription.price.formattedAsCurrency())"
-        content.sound = .default
-
-        var dateComponents = Calendar.current.dateComponents([.month, .day], from: subscription.paymentDate)
-        dateComponents.hour = 9
-
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-        let request = UNNotificationRequest(identifier: subscription.id.uuidString, content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request)
     }
 }

@@ -43,7 +43,19 @@ struct BurnRateView: View {
 
     var kalan: Decimal { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
     var saglik: (skor: Int, durum: String, renk: String) { ml.finansalSaglikSkoru(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
-    var risk: (riskli: Bool, oran: Decimal) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+    var risk: (durum: IflasRiski, oran: Decimal?) { ml.iflasRiski(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
+
+    var riskMetni: String {
+        switch risk.durum {
+        case .riskli: return "Riskli 🔴"
+        case .guvenli: return "Güvenli 💚"
+        case .hesaplanamadi: return "Hesaplanamadı"
+        }
+    }
+
+    var riskRenk: Color {
+        risk.durum == .hesaplanamadi ? .gray : .primary
+    }
 
     var grafikVerisi: [(ay: String, deger: Double)] {
         let aylar = ["Oca", "Şub", "Mar", "Nis", "May", "Haz"]
@@ -160,8 +172,9 @@ struct BurnRateView: View {
                         VStack(alignment: .trailing) {
                             Text("İflas Riski")
                                 .font(.caption).foregroundColor(.gray)
-                            Text(risk.riskli ? "Riskli 🔴" : "Güvenli 💚")
+                            Text(riskMetni)
                                 .font(.title3).bold()
+                                .foregroundColor(riskRenk)
                         }
                     }
                     .padding()
@@ -179,14 +192,14 @@ struct BurnRateView: View {
                                 x: .value("Ay", veri.ay),
                                 y: .value("Bakiye", veri.deger)
                             )
-                            .foregroundStyle(risk.riskli ? Color.red : Color.blue)
+                            .foregroundStyle(risk.durum == .riskli ? Color.red : Color.blue)
                             .interpolationMethod(.catmullRom)
-                            
+
                             AreaMark(
                                 x: .value("Ay", veri.ay),
                                 y: .value("Bakiye", veri.deger)
                             )
-                            .foregroundStyle(risk.riskli ? Color.red.opacity(0.1) : Color.blue.opacity(0.1))
+                            .foregroundStyle(risk.durum == .riskli ? Color.red.opacity(0.1) : Color.blue.opacity(0.1))
                         }
                         .frame(height: 200)
                         .padding(.horizontal)
