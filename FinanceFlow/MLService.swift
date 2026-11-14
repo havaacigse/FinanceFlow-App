@@ -8,6 +8,12 @@
 import Foundation
 import CoreML
 
+enum IflasRiski: Equatable {
+    case riskli
+    case guvenli
+    case hesaplanamadi
+}
+
 struct MLService {
 
     private let model: BurnRateModel? = try? BurnRateModel(configuration: MLModelConfiguration())
@@ -42,11 +48,12 @@ struct MLService {
         return (kalanGun, formatter.string(from: tarih))
     }
 
-    func iflasRiski(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (riskli: Bool, oran: Decimal) {
+    func iflasRiski(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (durum: IflasRiski, oran: Decimal?) {
+        guard gelir > 0 else { return (.hesaplanamadi, nil) }
         let skor = finansalSaglikSkoru(gelir: gelir, abonelik: abonelik, gecenAyHarcama: gecenAyHarcama).skor
-        guard gelir > 0 else { return (skor < 40, 0) }
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        return (skor < 40, min(max(harcamaOrani * 100, 0), 100))
+        let durum: IflasRiski = skor < 40 ? .riskli : .guvenli
+        return (durum, min(max(harcamaOrani * 100, 0), 100))
     }
 
     private static func asDouble(_ value: Decimal) -> Double {
