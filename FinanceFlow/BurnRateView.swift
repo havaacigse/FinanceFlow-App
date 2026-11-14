@@ -22,8 +22,24 @@ struct BurnRateView: View {
         subs.reduce(0) { $0 + $1.price }
     }
 
-    var g: Decimal { Decimal(Double(gelir) ?? 0) }
-    var h: Decimal { Decimal(Double(gecenAyHarcama) ?? 0) }
+    var g: Decimal { Decimal(userInput: gelir) ?? 0 }
+    var h: Decimal { Decimal(userInput: gecenAyHarcama) ?? 0 }
+
+    var isInputValid: Bool {
+        Decimal(userInput: gelir) != nil && Decimal(userInput: gecenAyHarcama) != nil
+    }
+
+    private func amountErrorMessage(for text: String) -> String? {
+        guard !text.isEmpty else { return nil }
+        guard Decimal(userInput: text) != nil else {
+            let separator = Locale.current.decimalSeparator ?? ","
+            return "Geçerli bir tutar girin (örn. 15000\(separator)50)"
+        }
+        return nil
+    }
+
+    var gelirErrorMessage: String? { amountErrorMessage(for: gelir) }
+    var harcamaErrorMessage: String? { amountErrorMessage(for: gecenAyHarcama) }
 
     var kalan: Decimal { ml.kalanBakiyeTahmini(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
     var saglik: (skor: Int, durum: String, renk: String) { ml.finansalSaglikSkoru(gelir: g, abonelik: toplamAbonelik, gecenAyHarcama: h) }
@@ -48,6 +64,7 @@ struct BurnRateView: View {
     
     var skorRenk: Color {
         guard analizYapildi else { return .gray }
+        guard saglik.durum != "Hesaplanamadı" else { return .gray }
         switch saglik.skor {
         case 80...100: return .green
         case 40...79: return .yellow
@@ -72,22 +89,38 @@ struct BurnRateView: View {
                 .padding(.horizontal)
                 
                 VStack(spacing: 12) {
-                    TextField("Aylık Geliriniz (₺)", text: $gelir)
-                        .keyboardType(.decimalPad)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
-                    
-                    TextField("Geçen Ay Harcama (₺)", text: $gecenAyHarcama)
-                        .keyboardType(.decimalPad)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
+                    VStack(alignment: .leading, spacing: 4) {
+                        TextField("Aylık Geliriniz (₺)", text: $gelir)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                        if let message = gelirErrorMessage {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Abonelikler hariç")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        TextField("Geçen Ay Harcama (₺)", text: $gecenAyHarcama)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                        if let message = harcamaErrorMessage {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
                 .padding(.horizontal)
-                
+
                 Button("Analiz Et") {
-                    guard !gelir.isEmpty, !gecenAyHarcama.isEmpty else { return }
                     withAnimation { analizYapildi = true }
                 }
                 .font(.headline)
@@ -97,6 +130,7 @@ struct BurnRateView: View {
                 .background(Color.blue)
                 .cornerRadius(12)
                 .padding(.horizontal)
+                .disabled(!isInputValid)
                 
                 if analizYapildi {
                     VStack(spacing: 8) {
@@ -119,7 +153,7 @@ struct BurnRateView: View {
                         VStack(alignment: .leading) {
                             Text("Tahmini Kalan")
                                 .font(.caption).foregroundColor(.gray)
-                            Text("₺\(String(format: "%.0f", NSDecimalNumber(decimal: kalan).doubleValue))")
+                            Text(kalan.formattedAsCurrency())
                                 .font(.title2).bold()
                         }
                         Spacer()

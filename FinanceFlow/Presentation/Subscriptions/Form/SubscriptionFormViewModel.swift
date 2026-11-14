@@ -56,27 +56,7 @@ final class SubscriptionFormViewModel {
     }
 
     private var parsedPrice: Decimal? {
-        Self.parsePrice(priceText)
-    }
-
-    private static func parsePrice(_ text: String) -> Decimal? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-
-        let separatorCount = trimmed.filter { $0 == "," || $0 == "." }.count
-        guard separatorCount <= 1 else { return nil }
-
-        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
-        let components = normalized.split(separator: ".", omittingEmptySubsequences: false)
-        guard components.count <= 2,
-              components.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else {
-            return nil
-        }
-        if components.count == 2 {
-            guard components[1].count <= 2 else { return nil }
-        }
-
-        return Decimal(string: normalized)
+        Decimal(userInput: priceText)
     }
 
     private static let displayFormatter: NumberFormatter = {

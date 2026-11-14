@@ -23,8 +23,9 @@ struct MLService {
     }
 
       func finansalSaglikSkoru(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (skor: Int, durum: String, renk: String) {
+        guard gelir > 0 else { return (0, "Hesaplanamadı", "gray") }
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        let skor = max(0, min(100, NSDecimalNumber(decimal: (1 - harcamaOrani) * 100).intValue))
+        let skor = max(0, min(100, ((1 - harcamaOrani) * 100).roundedToInt()))
         if skor >= 70 { return (skor, "Sağlıklı", "green") }
         else if skor >= 40 { return (skor, "Dikkatli", "yellow") }
         else { return (skor, "Tehlikeli", "red") }
@@ -33,7 +34,7 @@ struct MLService {
     func kacGundeBiter(abonelik: Decimal, gecenAyHarcama: Decimal, mevcutBakiye: Decimal) -> (gun: Int, tarih: String) {
         let gunlukHarcama = (abonelik + gecenAyHarcama) / 30
         guard gunlukHarcama > 0 else { return (0, "Hesaplanamadı") }
-        let kalanGun = NSDecimalNumber(decimal: mevcutBakiye / gunlukHarcama).intValue
+        let kalanGun = (mevcutBakiye / gunlukHarcama).roundedToInt()
         let tarih = Calendar.current.date(byAdding: .day, value: kalanGun, to: Date()) ?? Date()
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
@@ -42,8 +43,10 @@ struct MLService {
     }
 
     func iflasRiski(gelir: Decimal, abonelik: Decimal, gecenAyHarcama: Decimal) -> (riskli: Bool, oran: Decimal) {
+        let skor = finansalSaglikSkoru(gelir: gelir, abonelik: abonelik, gecenAyHarcama: gecenAyHarcama).skor
+        guard gelir > 0 else { return (skor < 40, 0) }
         let harcamaOrani = (abonelik + gecenAyHarcama) / gelir
-        return (harcamaOrani > 0.7, min(harcamaOrani * 100, 100))
+        return (skor < 40, min(max(harcamaOrani * 100, 0), 100))
     }
 
     private static func asDouble(_ value: Decimal) -> Double {

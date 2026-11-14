@@ -28,7 +28,7 @@ struct HomeView: View {
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.8))
 
-                        Text(String(format: "₺%.2f", NSDecimalNumber(decimal: viewModel.totalMonthly).doubleValue))
+                        Text(viewModel.totalMonthly.formattedAsCurrency())
                             .font(.system(size: 48, weight: .bold))
                             .foregroundColor(.white)
 
@@ -155,7 +155,7 @@ struct HomeView: View {
                                     .foregroundColor(.gray)
                             }
                             Spacer()
-                            Text(String(format: "₺%.2f", NSDecimalNumber(decimal: sub.price).doubleValue))
+                            Text(sub.price.formattedAsCurrency())
                                 .font(.headline)
                                 .foregroundColor(.blue)
                         }

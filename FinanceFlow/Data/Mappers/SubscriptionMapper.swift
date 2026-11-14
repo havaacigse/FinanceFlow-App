@@ -46,15 +46,6 @@ struct SubscriptionMapper {
     }
 
     private static func minorUnits(from price: Decimal) -> Int {
-        let handler = NSDecimalNumberHandler(
-            roundingMode: .plain,
-            scale: 0,
-            raiseOnExactness: false,
-            raiseOnOverflow: false,
-            raiseOnUnderflow: false,
-            raiseOnDivideByZero: false
-        )
-        let rounded = NSDecimalNumber(decimal: price * 100).rounding(accordingToBehavior: handler)
-        return rounded.intValue
+        (price * 100).roundedToInt()
     }
 }

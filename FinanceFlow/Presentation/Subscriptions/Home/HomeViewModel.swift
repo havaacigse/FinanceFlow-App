@@ -59,7 +59,7 @@ final class HomeViewModel {
     private func scheduleNotification(for subscription: Subscription) {
         let content = UNMutableNotificationContent()
         content.title = "Ödeme Zamanı! 💳"
-        content.body = "\(subscription.name) aboneliğin bugün yenileniyor: ₺\(String(format: "%.2f", NSDecimalNumber(decimal: subscription.price).doubleValue))"
+        content.body = "\(subscription.name) aboneliğin bugün yenileniyor: \(subscription.price.formattedAsCurrency())"
         content.sound = .default
 
         var dateComponents = Calendar.current.dateComponents([.month, .day], from: subscription.paymentDate)

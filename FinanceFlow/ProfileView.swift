@@ -62,7 +62,7 @@ struct ProfileView: View {
                     VStack(spacing: 4) {
                         Text("Aylık")
                             .font(.caption).foregroundColor(.gray)
-                        Text(String(format: "₺%.0f", NSDecimalNumber(decimal: subscriptions.reduce(0) { $0 + $1.price }).doubleValue))
+                        Text(subscriptions.reduce(0) { $0 + $1.price }.formattedAsCurrency())
                             .font(.title3).bold().foregroundColor(.blue)
                     }
                     .frame(maxWidth: .infinity)
@@ -73,7 +73,7 @@ struct ProfileView: View {
                     VStack(spacing: 4) {
                         Text("Yıllık")
                             .font(.caption).foregroundColor(.gray)
-                        Text(String(format: "₺%.0f", NSDecimalNumber(decimal: toplamYillik).doubleValue))
+                        Text(toplamYillik.formattedAsCurrency())
                             .font(.title3).bold().foregroundColor(.purple)
                     }
                     .frame(maxWidth: .infinity)
@@ -91,7 +91,7 @@ struct ProfileView: View {
                         HStack {
                             Text(pahalı.name)
                             Spacer()
-                            Text(String(format: "₺%.2f", NSDecimalNumber(decimal: pahalı.price).doubleValue))
+                            Text(pahalı.price.formattedAsCurrency())
                                 .foregroundColor(.red)
                         }
                     }
@@ -111,7 +111,7 @@ struct ProfileView: View {
                         HStack {
                             Text(kategori)
                             Spacer()
-                            Text(String(format: "₺%.2f", NSDecimalNumber(decimal: tutar).doubleValue))
+                            Text(tutar.formattedAsCurrency())
                                 .foregroundColor(.blue)
                         }
                         .padding(.horizontal)
